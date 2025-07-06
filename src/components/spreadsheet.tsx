@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
   flexRender,
   createColumnHelper,
+  type SortingState,
+  type ColumnFiltersState,
+  type VisibilityState,
 } from '@tanstack/react-table';
 
 const Spreadsheet: React.FC = () => {
-  const data = [
+  const data = useMemo(() => [
     {
       jobRequest: "Launch social media campaign for product XYZ",
       submitted: "15-11-2024",
@@ -63,11 +68,11 @@ const Spreadsheet: React.FC = () => {
       dueDate: "30-01-2025",
       estValue: "2,800,000",
     },
-  ];
+  ], []);
 
   const columnHelper = createColumnHelper<typeof data[0]>();
 
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.display({
       id: 'rowNumber',
       header: () => (
@@ -152,12 +157,26 @@ const Spreadsheet: React.FC = () => {
       header: () => "",
       cell: () => <span>&nbsp;</span>,
     }),
-  ];
+  ], []);
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const table = useReactTable({
     data,
     columns,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+    },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
   });
 
   const [showToolbarMenu, setShowToolbarMenu] = useState(true);
@@ -169,6 +188,8 @@ const Spreadsheet: React.FC = () => {
   const exportClick: () => void = () => { alert("The export button was clicked"); };
   const shareClick: () => void = () => { alert("The share button was clicked"); };
   const newAct: () => void = () => { alert("A new Acion is to be performed"); };
+
+  const [hoveredCell, setHoveredCell] = useState<{ row: string; col: number } | null>(null);
 
   return (
     <div className="w-screen h-screen flex flex-col bg-white">
@@ -228,10 +249,56 @@ const Spreadsheet: React.FC = () => {
           {/* Inline dropdown buttons */}
           {showToolbarMenu && (
             <div className="flex items-center transition-all">
-              <button className="text-gray-600 hover:text-black px-3 py-1">Hide fields</button>
-              <button className="text-gray-600 hover:text-black px-3 py-1">Sort</button>
-              <button className="text-gray-600 hover:text-black px-3 py-1">Filter</button>
-              <button className="text-gray-600 hover:text-black px-3 py-1">Cell view</button>
+              {/* Hide fields (toggle Est. Value column) */}
+              <button
+                className="text-gray-600 hover:text-black px-3 py-1"
+                onClick={() => {
+                  table.getColumn('estValue')?.toggleVisibility();
+                }}
+              >
+                {table.getColumn('estValue')?.getIsVisible() ? 'Hide fields' : 'Show fields'}
+              </button>
+              {/* Sort by Due Date */}
+              <button
+                className="text-gray-600 hover:text-black px-3 py-1"
+                onClick={() => {
+                  const current = table.getState().sorting.find(s => s.id === 'dueDate');
+                  if (!current) {
+                    table.setSorting([{ id: 'dueDate', desc: false }]);
+                  } else if (!current.desc) {
+                    table.setSorting([{ id: 'dueDate', desc: true }]);
+                  } else {
+                    table.setSorting([]);
+                  }
+                }}
+              >
+                Sort
+              </button>
+              {/* Filter by Status */}
+              <button
+                className="text-gray-600 hover:text-black px-3 py-1"
+                onClick={() => {
+                  const col = table.getColumn('status');
+                  if (!col) return;
+                  const current = col.getFilterValue();
+                  if (current === 'In-process') {
+                    col.setFilterValue('');
+                  } else {
+                    col.setFilterValue('In-process');
+                  }
+                }}
+              >
+                {table.getColumn('status')?.getFilterValue() === 'In-process' ? 'Clear Filter' : 'Filter'}
+              </button>
+              {/* Cell view (toggle Priority column) */}
+              <button
+                className="text-gray-600 hover:text-black px-3 py-1"
+                onClick={() => {
+                  table.getColumn('priority')?.toggleVisibility();
+                }}
+              >
+                {table.getColumn('priority')?.getIsVisible() ? 'Cell View' : 'Normal view'}
+              </button>
             </div>
           )}
 
@@ -316,12 +383,12 @@ const Spreadsheet: React.FC = () => {
             </thead>
             <tbody>
               {table.getRowModel().rows.map(row => (
-                <tr key={row.id} className="hover:bg-gray-50">
+                <tr key={row.id}>
                   {row.getVisibleCells().map((cell, idx) => (
                     <td
                       key={cell.id}
                       className={
-                        idx === 0
+                        (idx === 0
                           ? "bg-gray-50 px-2 py-2 text-center border border-white"
                           : idx === 1
                             ? "px-3 py-3 text-left truncate max-w-[210px] border border-gray-200"
@@ -344,11 +411,17 @@ const Spreadsheet: React.FC = () => {
                                             : idx === 10
                                               ? "px-6 border border-gray-200"
                                               : ""
+                        ) +
+                        (hoveredCell && hoveredCell.row === row.id && hoveredCell.col === idx
+                          ? " border-green-500 border-2"
+                          : "")
                       }
                       style={idx === 10
                         ? { borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }
                         : undefined
                       }
+                      onMouseEnter={() => setHoveredCell({ row: row.id, col: idx })}
+                      onMouseLeave={() => setHoveredCell(null)}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
@@ -357,11 +430,11 @@ const Spreadsheet: React.FC = () => {
               ))}
               {/* Empty rows */}
               {Array.from({ length: 20 }).map((_, i) => (
-                <tr key={`empty-${i}`} className="hover:bg-gray-50">
+                <tr key={`empty-${i}`}>
                   {Array.from({ length: 11 }).map((_, j) => (
                     <td
                       key={j}
-                      className={`h-10 border border-gray-200 ${j === 10 ? 'px-6' : ''} ${j === 0 ? 'text-center' : ''} ${j === 9 ? 'border-r-0' : ''}`}
+                      className={`h-10 border border-gray-200 ${j === 10 ? 'px-6' : ''} ${j === 0 ? 'text-center' : ''} ${j === 9 ? 'border-r-0' : ''} hover:border-green-500 hover:border-2`}
                       style={{
                         borderLeftColor: `${j === 10 ? 'gray' : ''}`,
                         borderLeftStyle: `${j === 10 ? 'dashed' : 'solid'}`,
