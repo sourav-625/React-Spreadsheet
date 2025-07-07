@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+
 import {
   useReactTable,
   getCoreRowModel,
@@ -10,6 +11,19 @@ import {
   type ColumnFiltersState,
   type VisibilityState,
 } from '@tanstack/react-table';
+
+import { VscEyeClosed, VscEye } from "react-icons/vsc";
+import { IoFilterSharp, IoPerson } from "react-icons/io5";
+import { MdFilterListOff } from "react-icons/md";
+import { FaGlobe, FaCalendarAlt } from "react-icons/fa";
+import { FaBriefcase, FaRegShareFromSquare } from "react-icons/fa6";
+import { LiaDownloadSolid, LiaUploadSolid } from "react-icons/lia";
+import { RiArrowDropDownLine, RiArrowDropUpLine, RiArrowRightWideFill } from "react-icons/ri";
+import { IoIosArrowDropdownCircle } from "react-icons/io";
+import { BsThreeDots } from "react-icons/bs";
+import { PiArrowsSplit } from "react-icons/pi";
+import { TbArrowAutofitHeight } from "react-icons/tb";
+import { LuArrowDownUp } from "react-icons/lu";
 
 const Spreadsheet: React.FC = () => {
   const data = useMemo(() => [
@@ -81,15 +95,33 @@ const Spreadsheet: React.FC = () => {
       cell: info => info.row.index + 1,
     }),
     columnHelper.accessor('jobRequest', {
-      header: () => "Job Request",
+      header: () => (
+        <span className="flex items-center">
+          <FaBriefcase className="inline mr-1 mb-1 w-4 h-4" />
+          Job Request
+          <RiArrowDropDownLine className="ml-auto w-5 h-5" />
+        </span>
+      ),
       cell: info => info.getValue(),
     }),
     columnHelper.accessor('submitted', {
-      header: () => "Submitted",
+      header: () => (
+        <span className="flex items-center">
+          <FaCalendarAlt className="inline mr-1 mb-1 w-4 h-4" />
+          Submitted
+          <RiArrowDropDownLine className="ml-auto w-5 h-5" />
+        </span>
+      ),
       cell: info => info.getValue(),
     }),
     columnHelper.accessor('status', {
-      header: () => "Status",
+      header: () => (
+        <span className="flex items-center">
+          <IoIosArrowDropdownCircle className="inline mr-1 mb-1 w-4 h-4" />
+          Status
+          <RiArrowDropDownLine className="ml-auto w-5 h-5" />
+        </span>
+      ),
       cell: info => {
         const status = info.getValue();
         return (
@@ -109,11 +141,23 @@ const Spreadsheet: React.FC = () => {
       },
     }),
     columnHelper.accessor('submitter', {
-      header: () => "Submitter",
+      header: () => (
+        <span className="flex items-center">
+          <IoPerson className="inline mr-1 mb-1 w-4 h-4" />
+          Submitter
+          <RiArrowDropDownLine className="ml-auto w-5 h-5" />
+        </span>
+      ),
       cell: info => info.getValue(),
     }),
     columnHelper.accessor('url', {
-      header: () => "URL",
+      header: () => (
+        <span className="flex items-center">
+          <FaGlobe className="inline mr-1 mb-1 w-4 h-4" />
+          URL
+          <RiArrowDropDownLine className="ml-auto w-5 h-5" />
+        </span>
+      ),
       cell: info => (
         <a href={`https://${info.getValue()}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
           {info.getValue()}
@@ -181,6 +225,8 @@ const Spreadsheet: React.FC = () => {
 
   const [showToolbarMenu, setShowToolbarMenu] = useState(true);
   const toggleToolbarMenu = () => setShowToolbarMenu(prev => !prev);
+
+  const [showHeader, setShowHeader] = useState(true);
 
   let idx: number = data.length;
 
@@ -252,11 +298,19 @@ const Spreadsheet: React.FC = () => {
               {/* Hide fields (toggle Est. Value column) */}
               <button
                 className="text-gray-600 hover:text-black px-3 py-1"
-                onClick={() => {
-                  table.getColumn('estValue')?.toggleVisibility();
-                }}
+                onClick={() => setShowHeader((prev) => !prev)}
               >
-                {table.getColumn('estValue')?.getIsVisible() ? 'Hide fields' : 'Show fields'}
+                {showHeader ? (
+                  <>
+                    <VscEyeClosed className="inline mr-1 mb-1 w-4 h-4" />
+                    Hide fields
+                  </>
+                ) : (
+                  <>
+                    <VscEye className="inline mr-1 mb-1 w-4 h-4" />
+                    Show fields
+                  </>
+                )}
               </button>
               {/* Sort by Due Date */}
               <button
@@ -272,7 +326,7 @@ const Spreadsheet: React.FC = () => {
                   }
                 }}
               >
-                Sort
+                <LuArrowDownUp className='inline mr-1 mb-1 w-4 h-4' />Sort
               </button>
               {/* Filter by Status */}
               <button
@@ -288,7 +342,7 @@ const Spreadsheet: React.FC = () => {
                   }
                 }}
               >
-                {table.getColumn('status')?.getFilterValue() === 'In-process' ? 'Clear Filter' : 'Filter'}
+                {table.getColumn('status')?.getFilterValue() === 'In-process' ? (<><MdFilterListOff className='inline mr-1 mb-1 w-4 h-4' />Clear Filter</>) : (<><IoFilterSharp className='inline mr-1 mb-1 w-4 h-4' />Filter</>)}
               </button>
               {/* Cell view (toggle Priority column) */}
               <button
@@ -297,17 +351,17 @@ const Spreadsheet: React.FC = () => {
                   table.getColumn('priority')?.toggleVisibility();
                 }}
               >
-                {table.getColumn('priority')?.getIsVisible() ? 'Cell View' : 'Normal view'}
+                {table.getColumn('priority')?.getIsVisible() ? (<><TbArrowAutofitHeight className='inline mr-1 mb-1 w-4 h-4' />Cell View</>) : 'Normal view'}
               </button>
             </div>
           )}
 
           {/* Right-aligned utility buttons */}
           <div className="ml-auto flex gap-2">
-            <button className="text-sm bg-white border px-3 py-1 rounded hover:bg-gray-100" onClick={importClick}>Import</button>
-            <button className="text-sm bg-white border px-3 py-1 rounded hover:bg-gray-100" onClick={exportClick}>Export</button>
-            <button className="text-sm bg-white border px-3 py-1 rounded hover:bg-gray-100" onClick={shareClick}>Share</button>
-            <button className="text-white bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded text-sm font-medium" onClick={newAct}>+ New Action</button>
+            <button className="text-sm bg-white border px-3 py-1 rounded hover:bg-gray-100" onClick={importClick}><LiaDownloadSolid className='inline mr-1 mb-1 w-4 h-4' />Import</button>
+            <button className="text-sm bg-white border px-3 py-1 rounded hover:bg-gray-100" onClick={exportClick}><LiaUploadSolid className='inline mr-1 mb-1 w-4 h-4' />Export</button>
+            <button className="text-sm bg-white border px-3 py-1 rounded hover:bg-gray-100" onClick={shareClick}><FaRegShareFromSquare className='inline mr-1 mb-1 w-4 h-4' />Share</button>
+            <button className="text-white bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded text-sm font-medium" onClick={newAct}><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />New Action</button>
           </div>
         </div>
       </div>
@@ -315,72 +369,74 @@ const Spreadsheet: React.FC = () => {
       <div className="flex-1 overflow-auto pb-20">
         <div className="border shadow-sm">
           <table className="w-full min-w-[1400px] border-collapse text-sm">
-            <thead>
-              {/* Segmentation row inside table */}
-              <tr>
-                <th className="bg-white px-2 py-2 text-center border border-white">
-                  <div className="text-gray-400"></div>
-                </th>
-                <th colSpan={4} className="bg-gray-300 px-2 py-2 border border-white">
-                  <div className="text-left bg-white w-fit text-sm font-semibold px-2">Q3 financial overview</div>
-                </th>
-                <th className="bg-white px-2 py-2 border border-white">
-                </th>
-                <th className="bg-green-200 px-2 py-2 border border-white">
-                  <div className="text-gray-500 font-semibold">ABC</div>
-                </th>
-                <th colSpan={2} className="bg-purple-200 px-2 py-2 border border-white">
-                  <div className="text-gray-500 font-semibold">Answer a Question</div>
-                </th>
-                <th className="bg-orange-200 px-2 py-2 border border-white border-r-0">
-                  <div className="text-gray-500 font-semibold">Extract</div>
-                </th>
-                <th className="bg-gray-200 px-12 py-2 border border-gray-200" style={{ borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }}>
-                  <span className="text-gray-500 text-xl font-semibold">+</span>
-                </th>
-              </tr>
-              {/* Table header row */}
-              {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header, idx) => (
-                    <th
-                      key={header.id}
-                      className={
-                        idx === 0
-                          ? "bg-gray-200 px-2 py-2 text-center border border-white"
-                          : idx === 1
-                            ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
-                            : idx === 2
-                              ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
-                              : idx === 3
-                                ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
-                                : idx === 4
-                                  ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
-                                  : idx === 5
-                                    ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
-                                    : idx === 6
-                                      ? "bg-green-100 px-3 py-3 text-left border border-white text-gray-500"
-                                      : idx === 7
-                                        ? "bg-purple-100 px-3 py-3 text-left border border-white text-gray-500"
-                                        : idx === 8
-                                          ? "bg-purple-100 px-3 py-3 text-left border border-white text-gray-500"
-                                          : idx === 9
-                                            ? "bg-orange-100 px-3 py-3 text-left border border-white text-gray-500 border-r-0"
-                                            : idx === 10
-                                              ? "bg-white px-10 py-3 text-left border border-gray-200"
-                                              : ""
-                      }
-                      style={idx === 10
-                        ? { borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }
-                        : undefined
-                      }
-                    >
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </th>
-                  ))}
+            {showHeader && (
+              <thead>
+                {/* Segmentation row inside table */}
+                <tr>
+                  <th className="bg-white px-2 py-2 text-center border border-white">
+                    <div className="text-gray-400"></div>
+                  </th>
+                  <th colSpan={4} className="bg-gray-300 px-2 py-2 border border-white">
+                    <div className="text-left bg-white w-fit text-sm font-semibold px-2">Q3 financial overview</div>
+                  </th>
+                  <th className="bg-white px-2 py-2 border border-white">
+                  </th>
+                  <th className="bg-green-200 px-2 py-2 border border-white">
+                    <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />ABC <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
+                  </th>
+                  <th colSpan={2} className="bg-purple-200 px-2 py-2 border border-white">
+                    <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Answer a Question <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
+                  </th>
+                  <th className="bg-orange-200 px-2 py-2 border border-white border-r-0">
+                    <div className="text-gray-500 font-semibold text-center"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Extract <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
+                  </th>
+                  <th className="bg-gray-200 px-12 py-2 border border-gray-200" style={{ borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }}>
+                    <span className="text-gray-500 text-xl font-semibold">+</span>
+                  </th>
                 </tr>
-              ))}
-            </thead>
+                {/* Table header row */}
+                {table.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header, idx) => (
+                      <th
+                        key={header.id}
+                        className={
+                          idx === 0
+                            ? "bg-gray-200 px-2 py-2 text-center border border-white"
+                            : idx === 1
+                              ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
+                              : idx === 2
+                                ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
+                                : idx === 3
+                                  ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
+                                  : idx === 4
+                                    ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
+                                    : idx === 5
+                                      ? "bg-gray-200 px-3 py-3 text-left border border-white text-gray-500"
+                                      : idx === 6
+                                        ? "bg-green-100 px-3 py-3 text-left border border-white text-gray-500"
+                                        : idx === 7
+                                          ? "bg-purple-100 px-3 py-3 text-left border border-white text-gray-500"
+                                          : idx === 8
+                                            ? "bg-purple-100 px-3 py-3 text-left border border-white text-gray-500"
+                                            : idx === 9
+                                              ? "bg-orange-100 px-3 py-3 text-left border border-white text-gray-500 border-r-0"
+                                              : idx === 10
+                                                ? "bg-white px-10 py-3 text-left border border-gray-200"
+                                                : ""
+                        }
+                        style={idx === 10
+                          ? { borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }
+                          : undefined
+                        }
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+            )}
             <tbody>
               {table.getRowModel().rows.map(row => (
                 <tr key={row.id}>
