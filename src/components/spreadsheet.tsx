@@ -6,6 +6,7 @@ import {
   getFilteredRowModel,
   flexRender,
   createColumnHelper,
+  type ColumnDef,
   type SortingState,
   type ColumnFiltersState,
   type VisibilityState,
@@ -26,7 +27,7 @@ import { LuArrowDownUp } from "react-icons/lu";
 import { GrPowerCycle } from "react-icons/gr";
 
 const Spreadsheet: React.FC = () => {
-  const [tableData, setTableData] = useState([
+  const [tableData] = useState([
     {
       jobRequest: "Launch social media campaign for product XYZ",
       submitted: "15-11-2024",
@@ -84,208 +85,230 @@ const Spreadsheet: React.FC = () => {
     },
   ]);
 
+  type Row = {
+    jobRequest: string;
+    submitted: string;
+    status: string;
+    submitter: string;
+    url: string;
+    assigned: string[];
+    priority: string;
+    dueDate: string;
+    estValue: string;
+  }
+
   const columnHelper = createColumnHelper<typeof tableData[0]>();
   const [hiddenCells, setHiddenCells] = useState<{ [key: string]: boolean }>({});
   const [showEmptyRows, setShowEmptyRows] = useState(true);
+  const [extraColumn, setExtraColumn] = useState<ColumnDef<Row>[]>([]);
 
-  const columns = useMemo(() => [
-    columnHelper.display({
-      id: 'rowNumber',
-      header: () => (
-        <span className="text-gray-400 text-2xl font-normal">#</span>
-      ),
-      cell: info => info.row.index + 1,
-    }),
-    columnHelper.accessor('jobRequest', {
-      header: () => {
-        const isHidden = hiddenCells['jobRequest'];
-        return (
-          <span className="flex items-center">
-            <FaBriefcase className="inline mr-1 w-4 h-4" />
-            Job Request
-            <span
-              className="ml-auto cursor-pointer"
-              onClick={e => {
-                e.stopPropagation();
-                setHiddenCells(prev => ({
-                  ...prev,
-                  jobRequest: !prev.jobRequest,
-                }));
-              }}
-            >
-              {isHidden
-                ? <RiArrowDropUpLine className="w-5 h-5" />
-                : <RiArrowDropDownLine className="w-5 h-5" />
-              }
+  const columns = useMemo(() => {
+    const baseColumn = [
+      columnHelper.display({
+        id: 'rowNumber',
+        header: () => (
+          <span className="text-gray-400 text-2xl font-normal">#</span>
+        ),
+        cell: info => info.row.index + 1,
+      }),
+      columnHelper.accessor('jobRequest', {
+        header: () => {
+          const isHidden = hiddenCells['jobRequest'];
+          return (
+            <span className="flex items-center">
+              <FaBriefcase className="inline mr-1 w-4 h-4" />
+              Job Request
+              <span
+                className="ml-auto cursor-pointer"
+                onClick={e => {
+                  e.stopPropagation();
+                  setHiddenCells(prev => ({
+                    ...prev,
+                    jobRequest: !prev.jobRequest,
+                  }));
+                }}
+              >
+                {isHidden
+                  ? <RiArrowDropUpLine className="w-5 h-5" />
+                  : <RiArrowDropDownLine className="w-5 h-5" />
+                }
+              </span>
             </span>
-          </span>
-        );
-      },
-      cell: info => hiddenCells['jobRequest'] ? "" : info.getValue(),
-    }),
-    columnHelper.accessor('submitted', {
-      header: () => {
-        const isHidden = hiddenCells['submitted'];
-        return (
-          <span className="flex items-center">
-            <FaCalendarAlt className="inline mr-1 w-4 h-4" />
-            Submitted
-            <span
-              className="ml-auto cursor-pointer"
-              onClick={e => {
-                e.stopPropagation();
-                setHiddenCells(prev => ({
-                  ...prev,
-                  submitted: !prev.submitted,
-                }));
-              }}
-            >
-              {isHidden
-                ? <RiArrowDropUpLine className="w-5 h-5" />
-                : <RiArrowDropDownLine className="w-5 h-5" />
-              }
+          );
+        },
+        cell: info => hiddenCells['jobRequest'] ? "" : info.getValue(),
+      }),
+      columnHelper.accessor('submitted', {
+        header: () => {
+          const isHidden = hiddenCells['submitted'];
+          return (
+            <span className="flex items-center">
+              <FaCalendarAlt className="inline mr-1 w-4 h-4" />
+              Submitted
+              <span
+                className="ml-auto cursor-pointer"
+                onClick={e => {
+                  e.stopPropagation();
+                  setHiddenCells(prev => ({
+                    ...prev,
+                    submitted: !prev.submitted,
+                  }));
+                }}
+              >
+                {isHidden
+                  ? <RiArrowDropUpLine className="w-5 h-5" />
+                  : <RiArrowDropDownLine className="w-5 h-5" />
+                }
+              </span>
             </span>
-          </span>
-        );
-      },
-      cell: info => hiddenCells['submitted'] ? "" : info.getValue(),
-    }),
-    columnHelper.accessor('status', {
-      header: () => {
-        const isHidden = hiddenCells['status'];
-        return (
-          <span className="flex items-center">
-            <IoIosArrowDropdownCircle className="inline mr-1 w-4 h-4" />
-            Status
-            <span
-              className="ml-auto cursor-pointer"
-              onClick={e => {
-                e.stopPropagation();
-                setHiddenCells(prev => ({
-                  ...prev,
-                  status: !prev.status,
-                }));
-              }}
-            >
-              {isHidden
-                ? <RiArrowDropUpLine className="w-5 h-5" />
-                : <RiArrowDropDownLine className="w-5 h-5" />
-              }
+          );
+        },
+        cell: info => hiddenCells['submitted'] ? "" : info.getValue(),
+      }),
+      columnHelper.accessor('status', {
+        header: () => {
+          const isHidden = hiddenCells['status'];
+          return (
+            <span className="flex items-center">
+              <IoIosArrowDropdownCircle className="inline mr-1 w-4 h-4" />
+              Status
+              <span
+                className="ml-auto cursor-pointer"
+                onClick={e => {
+                  e.stopPropagation();
+                  setHiddenCells(prev => ({
+                    ...prev,
+                    status: !prev.status,
+                  }));
+                }}
+              >
+                {isHidden
+                  ? <RiArrowDropUpLine className="w-5 h-5" />
+                  : <RiArrowDropDownLine className="w-5 h-5" />
+                }
+              </span>
             </span>
-          </span>
-        );
-      },
-      cell: info => hiddenCells['status'] ? "" : (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium
+          );
+        },
+        cell: info => hiddenCells['status'] ? "" : (
+          <span className={`px-2 py-1 rounded-full text-xs font-medium
       ${info.getValue() === "In-process"
-            ? "bg-yellow-100 text-yellow-800"
-            : info.getValue() === "Need to start"
-              ? "bg-blue-100 text-blue-800"
-              : info.getValue() === "Blocked"
-                ? "bg-red-100 text-red-800"
-                : info.getValue() === "Complete"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-800"}`}>
-          {info.getValue()}
-        </span>
-      ),
-    }),
-    columnHelper.accessor('submitter', {
-      header: () => {
-        const isHidden = hiddenCells['submitter'];
-        return (
-          <span className="flex items-center">
-            <IoPerson className="inline mr-1 w-4 h-4" />
-            Submitter
-            <span
-              className="ml-auto cursor-pointer"
-              onClick={e => {
-                e.stopPropagation();
-                setHiddenCells(prev => ({
-                  ...prev,
-                  submitter: !prev.submitter,
-                }));
-              }}
-            >
-              {isHidden
-                ? <RiArrowDropUpLine className="w-5 h-5" />
-                : <RiArrowDropDownLine className="w-5 h-5" />
-              }
+              ? "bg-yellow-100 text-yellow-800"
+              : info.getValue() === "Need to start"
+                ? "bg-blue-100 text-blue-800"
+                : info.getValue() === "Blocked"
+                  ? "bg-red-100 text-red-800"
+                  : info.getValue() === "Complete"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-800"}`}>
+            {info.getValue()}
+          </span>
+        ),
+      }),
+      columnHelper.accessor('submitter', {
+        header: () => {
+          const isHidden = hiddenCells['submitter'];
+          return (
+            <span className="flex items-center">
+              <IoPerson className="inline mr-1 w-4 h-4" />
+              Submitter
+              <span
+                className="ml-auto cursor-pointer"
+                onClick={e => {
+                  e.stopPropagation();
+                  setHiddenCells(prev => ({
+                    ...prev,
+                    submitter: !prev.submitter,
+                  }));
+                }}
+              >
+                {isHidden
+                  ? <RiArrowDropUpLine className="w-5 h-5" />
+                  : <RiArrowDropDownLine className="w-5 h-5" />
+                }
+              </span>
             </span>
-          </span>
-        );
-      },
-      cell: info => hiddenCells['submitter'] ? "" : info.getValue(),
-    }),
-    columnHelper.accessor('url', {
-      header: () => {
-        const isHidden = hiddenCells['url'];
-        return (
-          <span className="flex items-center">
-            <FaGlobe className="inline mr-1 w-4 h-4" />
-            URL
-            <span
-              className="ml-auto cursor-pointer"
-              onClick={e => {
-                e.stopPropagation();
-                setHiddenCells(prev => ({
-                  ...prev,
-                  url: !prev.url,
-                }));
-              }}
-            >
-              {isHidden
-                ? <RiArrowDropUpLine className="w-5 h-5" />
-                : <RiArrowDropDownLine className="w-5 h-5" />
-              }
+          );
+        },
+        cell: info => hiddenCells['submitter'] ? "" : info.getValue(),
+      }),
+      columnHelper.accessor('url', {
+        header: () => {
+          const isHidden = hiddenCells['url'];
+          return (
+            <span className="flex items-center">
+              <FaGlobe className="inline mr-1 w-4 h-4" />
+              URL
+              <span
+                className="ml-auto cursor-pointer"
+                onClick={e => {
+                  e.stopPropagation();
+                  setHiddenCells(prev => ({
+                    ...prev,
+                    url: !prev.url,
+                  }));
+                }}
+              >
+                {isHidden
+                  ? <RiArrowDropUpLine className="w-5 h-5" />
+                  : <RiArrowDropDownLine className="w-5 h-5" />
+                }
+              </span>
             </span>
+          );
+        },
+        cell: info => hiddenCells['url'] ? "" : (
+          <a href={`https://${info.getValue()}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+            {info.getValue()}
+          </a>
+        ),
+      }),
+      columnHelper.accessor('assigned', {
+        header: () => "Assigned",
+        cell: info => info.getValue().join(", "),
+      }),
+      columnHelper.accessor('priority', {
+        header: () => "Priority",
+        cell: info => {
+          const priority = info.getValue();
+          return (
+            <span className={`font-semibold text-sm ${priority === "High"
+              ? "text-red-600"
+              : priority === "Medium"
+                ? "text-yellow-600"
+                : "text-blue-600"
+              }`}>
+              {priority}
+            </span>
+          );
+        },
+      }),
+      columnHelper.accessor('dueDate', {
+        header: () => "Due Date",
+        cell: info => info.getValue(),
+      }),
+      columnHelper.accessor('estValue', {
+        header: () => "Est. Value",
+        cell: info => (
+          <span>
+            {info.getValue()} <span className="text-gray-400">₹</span>
           </span>
-        );
-      },
-      cell: info => hiddenCells['url'] ? "" : (
-        <a href={`https://${info.getValue()}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-          {info.getValue()}
-        </a>
-      ),
-    }),
-    columnHelper.accessor('assigned', {
-      header: () => "Assigned",
-      cell: info => info.getValue().join(", "),
-    }),
-    columnHelper.accessor('priority', {
-      header: () => "Priority",
-      cell: info => {
-        const priority = info.getValue();
-        return (
-          <span className={`font-semibold text-sm ${priority === "High"
-            ? "text-red-600"
-            : priority === "Medium"
-              ? "text-yellow-600"
-              : "text-blue-600"
-            }`}>
-            {priority}
-          </span>
-        );
-      },
-    }),
-    columnHelper.accessor('dueDate', {
-      header: () => "Due Date",
-      cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('estValue', {
-      header: () => "Est. Value",
-      cell: info => (
-        <span>
-          {info.getValue()} <span className="text-gray-400">₹</span>
-        </span>
-      ),
-    }),
-    columnHelper.display({
-      id: 'actions',
-      header: () => "",
-      cell: () => <span>&nbsp;</span>,
-    }),
-  ], [hiddenCells]);
+        ),
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: () => "",
+        cell: () => <span>&nbsp;</span>,
+      }),
+    ];
+    const insertAt = baseColumn.length - 1;
+    const newCOl = [
+      ...baseColumn.slice(0, insertAt),
+      ...extraColumn,
+      columnHelper.display({ id: 'actions', header: () => "", cell: () => <span>&nbsp;</span> })
+    ];
+    return newCOl;
+  }, [hiddenCells, extraColumn]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -331,8 +354,46 @@ const Spreadsheet: React.FC = () => {
     };
   }, []);
 
+  type superHeaders = {
+    label: React.ReactNode;
+    startIndex: number;
+    colSpan: number;
+    bg: string;
+  };
+
+
+  const [superHeaders, setSuperHeaders] = useState([
+    {
+      label:
+        <div className="flex items-center">
+          <div className="flex items-center bg-gray-100 w-fit text-sm font-semibold px-2 py-1 rounded">
+            <IoLink className='inline mr-1 text-blue-500 w-4 h-4' />
+            Q3 financial overview
+          </div>
+          <GrPowerCycle className='inline ml-2 text-orange-500 cursor-pointer' onClick={() => {window.location.reload()}}/>
+        </div>
+      , startIndex: 1, colSpan: 4, bg: "bg-gray-300"
+    },
+    { label: "", startIndex: 5, colSpan: 1, bg: "bg-white" },
+    {
+      label:
+        <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />ABC <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
+      , startIndex: 6, colSpan: 1, bg: "bg-green-200"
+    },
+    {
+      label:
+        <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Answer a Question <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
+      , startIndex: 7, colSpan: 2, bg: "bg-purple-200"
+    },
+    {
+      label:
+        <div className="text-gray-500 font-semibold text-center"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Extract <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
+      , startIndex: 9, colSpan: 1, bg: "bg-orange-200"
+    },
+  ]);
+
   return (
-    <div className="w-screen h-screen flex flex-col bg-white">
+    <div className="w-screen h-screen flex flex-col bg-white relative">
       <div className="bg-white border-b px-6 py-2 text-sm font-semibold shadow-sm sticky top-0 z-20 flex items-center">
         <VscLayoutPanel className='-rotate-90 w-5 h-5 mr-3 text-green-600' />
         <span className='text-gray-400'>Workspace &gt; Folder 2 &gt;</span>
@@ -442,46 +503,51 @@ const Spreadsheet: React.FC = () => {
             <button className="text-sm bg-white border px-3 py-1 rounded hover:bg-gray-100" onClick={() => { alert("The data was Imported"); }}><LiaDownloadSolid className='inline mr-1 mb-1 w-4 h-4' />Import</button>
             <button className="text-sm bg-white border px-3 py-1 rounded hover:bg-gray-100" onClick={() => { alert("The data was Exported"); }}><LiaDownloadSolid className='inline mr-1 mb-1 w-4 h-4 rotate-180' />Export</button>
             <button className="text-sm bg-white border px-3 py-1 rounded hover:bg-gray-100" onClick={() => { alert("The data was Shared"); }}><FaRegShareFromSquare className='inline mr-1 mb-1 w-4 h-4' />Share</button>
-            <button className="text-white bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded text-sm font-medium" onClick={() => { alert("A new Acion was performed"); }}><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />New Action</button>
+            <button className="text-white bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded text-sm font-medium" onClick={() => { alert("A new Action was performed"); }}><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />New Action</button>
           </div>
         </div>
       </div>
 
       <div
         ref={tableContainerRef}
-        className="flex-1 overflow-auto pb-20"
-        style={{ maxHeight: "calc(100vh - 200px)" }}
+        className="flex-1 overflow-auto max-h-screen"
       >
         <div className="border shadow-sm">
-          <table className="w-full min-w-[1400px] border-collapse text-sm">
+          <table className="w-full min-w-100 border-collapse text-sm">
             {showHeader && (
               <thead>
                 <tr>
                   <th className="bg-white px-2 py-2 text-center border border-white">
                     <div className="text-gray-400"></div>
                   </th>
-                  <th colSpan={4} className="bg-gray-300 px-2 py-2 border border-white">
-                    <div className="flex items-center">
-                      <div className="flex items-center bg-gray-100 w-fit text-sm font-semibold px-2 py-1 rounded">
-                        <IoLink className='inline mr-1 text-blue-500 w-4 h-4' />
-                        Q3 financial overview
-                      </div>
-                      <GrPowerCycle className='inline ml-2 text-orange-500' />
-                    </div>
-                  </th>
-                  <th className="bg-white px-2 py-2 border border-white">
-                  </th>
-                  <th className="bg-green-200 px-2 py-2 border border-white">
-                    <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />ABC <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
-                  </th>
-                  <th colSpan={2} className="bg-purple-200 px-2 py-2 border border-white">
-                    <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Answer a Question <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
-                  </th>
-                  <th className="bg-orange-200 px-2 py-2 border border-white border-r-0">
-                    <div className="text-gray-500 font-semibold text-center"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Extract <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
-                  </th>
-                  <th className="bg-gray-200 px-12 py-2 border border-gray-200" style={{ borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }}>
-                    <span className="text-gray-500 text-xl font-semibold cursor-pointer" onClick={() => alert("The User wants to add a New Column")}>+</span>
+                  {superHeaders.map((group, i) => (
+                    <th key={i} colSpan={group.colSpan} className={`${group.bg} px-2 py-2 border border-white`}>
+                      <div className="text-gray-500 font-semibold">{group.label}</div>
+                    </th>
+                  ))}
+                  <th className="bg-gray-200 px-12 py-2 border border-gray-200" style={{ borderLeftStyle: 'dashed', borderRightStyle: 'dashed' }}>
+                    <span
+                      className="text-gray-500 text-xl font-semibold cursor-pointer"
+                      onClick={() => {
+                        const newCol = columnHelper.display({
+                          id: `custom-${Date.now()}`,
+                          header: () => "New Col",
+                          cell: () => <span></span>,
+                        });
+                        setExtraColumn(prev => [...prev, newCol]);
+                        setSuperHeaders(headers => [
+                          ...headers,
+                          {
+                            label: "",
+                            startIndex: columns.length + extraColumn.length,
+                            colSpan: 1,
+                            bg: "bg-gray-200"
+                          }
+                        ]);
+                      }}
+                    >
+                      +
+                    </span>
                   </th>
                 </tr>
                 {table.getHeaderGroups().map(headerGroup => (
@@ -510,11 +576,11 @@ const Spreadsheet: React.FC = () => {
                                             ? "bg-purple-100 px-3 py-3 text-left border border-white text-gray-500"
                                             : idx === 9
                                               ? "bg-orange-100 px-3 py-3 text-left border border-white text-gray-500 border-r-0"
-                                              : idx === 10
-                                                ? "bg-white px-10 py-3 text-left border border-gray-200"
-                                                : ""
+                                              : idx === columns.length - 1
+                                                ? "bg-white px-10 py-3 text-left border-2 border-gray-200"
+                                                : "bg-gray-200 px-10 py-3 text-left border border-gray-200"
                         }
-                        style={idx === 10
+                        style={idx === columns.length - 1
                           ? { borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }
                           : undefined
                         }
@@ -532,6 +598,7 @@ const Spreadsheet: React.FC = () => {
                   {row.getVisibleCells().map((cell, idx) => (
                     <td
                       key={cell.id}
+                      contentEditable={idx === columns.length - 1 ? false : true}
                       className={
                         (idx === 0
                           ? "bg-gray-50 px-2 py-2 text-center border border-white"
@@ -552,16 +619,16 @@ const Spreadsheet: React.FC = () => {
                                         : idx === 8
                                           ? "px-3 py-3 text-right border border-gray-200"
                                           : idx === 9
-                                            ? "px-3 py-3 text-right border border-gray-200 border-r-0"
-                                            : idx === 10
-                                              ? "px-6 border border-gray-200"
-                                              : ""
+                                            ? "px-3 py-3 text-right border border-gray-200"
+                                            : idx === columns.length - 1
+                                              ? "px-6 border-2 border-gray-200"
+                                              : "px-3 border border-gray-200"
                         ) +
-                        (hoveredCell && hoveredCell.row === row.id && hoveredCell.col === idx
+                        (hoveredCell && hoveredCell.row === row.id && hoveredCell.col === idx && hoveredCell.col !== columns.length - 1
                           ? " border-green-500 border-2"
                           : "")
                       }
-                      style={idx === 10
+                      style={idx === columns.length - 1
                         ? { borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }
                         : undefined
                       }
@@ -575,16 +642,17 @@ const Spreadsheet: React.FC = () => {
               ))}
               {showEmptyRows && Array.from({ length: emptyRowCount }).map((_, i) => (
                 <tr key={`empty-${i}`}>
-                  {Array.from({ length: 11 }).map((_, j) => (
+                  {Array.from({ length: columns.length }).map((_, j) => (
                     <td
                       key={j}
-                      className={`h-10 border border-gray-200 ${j === 10 ? 'px-6' : ''} ${j === 0 ? 'text-center' : ''} ${j === 9 ? 'border-r-0' : ''} hover:border-green-500 hover:border-2`}
+                      className={`h-10 ${j === columns.length - 1 ? "border-2" : "border"} border-gray-200 ${j === 10 ? 'px-6' : ''} ${j === 0 ? 'text-center' : ''} ${j === 9 ? 'border-r-0' : ''} ${j === columns.length - 1 ? '' : "hover:border-green-500 hover:border-2"}`}
                       style={{
-                        borderLeftColor: `${j === 10 ? 'gray' : ''}`,
-                        borderLeftStyle: `${j === 10 ? 'dashed' : 'solid'}`,
-                        borderRightColor: `${j === 10 ? 'gray' : ''}`,
-                        borderRightStyle: `${j === 10 ? 'dashed' : 'solid'}`
+                        borderLeftColor: `${j === columns.length - 1 ? 'gray' : ''}`,
+                        borderLeftStyle: `${j === columns.length - 1 ? 'dashed' : 'solid'}`,
+                        borderRightColor: `${j === columns.length - 1 ? 'gray' : ''}`,
+                        borderRightStyle: `${j === columns.length - 1 ? 'dashed' : 'solid'}`
                       }}
+                      contentEditable={j === columns.length - 1 ? false : true}
                     >
                       {j === 0 ? `${tableData.length + i + 1}` : ''}
                     </td>
@@ -596,7 +664,7 @@ const Spreadsheet: React.FC = () => {
         </div>
       </div>
 
-      <div className="sticky bottom-0 bg-white border-t px-6 py-3 flex space-x-6 text-sm z-10">
+      <div className="absolute bottom-0 left-0 w-full bg-white border-t px-6 py-3 flex space-x-6 text-sm z-10">
         {["All Orders", "Pending", "Reviewed", "Arrived"].map(tab => (
           <span
             key={tab}
@@ -617,4 +685,4 @@ const Spreadsheet: React.FC = () => {
   );
 };
 
-export default Spreadsheet;
+export default Spreadsheet; // bg-white border-b px-6 py-2 text-sm font-semibold shadow-sm sticky top-0 z-20 flex items-center
