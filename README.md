@@ -1,73 +1,77 @@
-<<<<<<< HEAD
-# React + TypeScript + Vite
+# React Spreadsheet UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A pixel-perfect, spreadsheet-style UI built using React, TypeScript, TailwindCSS, and @tanstack/react-table (v8). This component mimics the look and feel of Excel/Google Sheets with sorting, editable cells, dynamic rows & columns, sticky headers, floating dropdowns, and responsive UI.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Spreadsheet-like interface using `@tanstack/react-table`
+- Sorting capabilities on all columns
+- Dynamic column addition via `+` icon
+- Editable empty rows
+- Super header rows with custom `colSpan` and icons
+- Sticky toolbar and footer
+- Floating dropdown menu (like context menu)
+- TailwindCSS-based consistent design
 
-## Expanding the ESLint configuration
+## ⚙️ Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Install dependencies
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Run the dev server
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
-=======
-# React-Spreadsheet
->>>>>>> b75a13f080182d8f3d9fc6456a54ff6d724aa8eb
+
+### 3. Type Check and Lint
+
+```bash
+npm run lint
+npm run type-check
+```
+
+## Folder Structure
+
+```plain text
+src/
+│
+├── components/
+│   ├── Spreadsheet.tsx       # Main spreadsheet UI component
+│   └── FloatingDropdown.tsx  # Reusable dropdown box
+│
+├── App.tsx                   # App entry point
+└── main.tsx                  # React DOM render
+```
+
+## Trade-offs
+
+### Custom UI over Library Defaults:
+While ' @tanstack/react-table ' provides utilities for table behavior, much of the UI (headers, toolbars, sticky behavior) has been manually styled using TailwindCSS to match a precise Figma design. This gives full control over layout but increases maintenance complexity and may diverge from best practices.
+
+### Super Header Manual Sync:
+The super header row is implemented manually and synced with the dynamic column definitions. This approach gives high flexibility in styling and managing updates during dynamic column addition.
+
+### Dynamic Columns Without Schema Binding:
+New columns can be added on the fly and rendered, but the data entered is not stored. This achieves a Google Sheets–like experience but backend integration and data persistence is needed later.
+
+### Simplified Data Entry Experience:
+The editable rows are handled via contentEditable, avoiding complex state handling or form validation. This is a quick and lightweight solution but limits control over input formats, validation, and user feedback.
+
+### Lightweight Dropdown Alternatives:
+Instead of implementing full dropdown components, 'alert()' boxes are used to simulate interactions under three-dot icons. This reduces UI complexity but does not offer true interactivity or customization.
+
+### No Virtualization or Pagination:
+All rows are rendered directly without react-virtual or pagination. This ensures simplicity and immediate responsiveness for smaller datasets but may not be efficient for larger datasets.
+
+### Minimal Accessibility Enhancements:
+The table prioritizes visual fidelity and flexibility over strict accessibility features like keyboard navigation, ARIA roles, or screen-reader-friendly markup.
+
+## Screenshot
+
+Here is a preview of the spreadsheet UI:
+
+![Spreadsheet Screenshot](./Screenshot_spreadsheet.png)

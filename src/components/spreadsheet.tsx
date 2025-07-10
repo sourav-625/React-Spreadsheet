@@ -308,7 +308,7 @@ const Spreadsheet: React.FC = () => {
       columnHelper.display({ id: 'actions', header: () => "", cell: () => <span>&nbsp;</span> })
     ];
     return newCOl;
-  }, [hiddenCells, extraColumn]);
+  }, [hiddenCells, extraColumn, columnHelper]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -336,7 +336,7 @@ const Spreadsheet: React.FC = () => {
   const [hoveredCell, setHoveredCell] = useState<{ row: string; col: number } | null>(null);
   const [selectedTab, setSelectedTab] = useState("All Orders");
   const [emptyRowCount, setEmptyRowCount] = useState(20);
-
+  const [focusedCell, setFocusedCell] = useState<{ row: string; col: number } | null>(null);
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -370,24 +370,24 @@ const Spreadsheet: React.FC = () => {
             <IoLink className='inline mr-1 text-blue-500 w-4 h-4' />
             Q3 financial overview
           </div>
-          <GrPowerCycle className='inline ml-2 text-orange-500 cursor-pointer' onClick={() => {window.location.reload()}}/>
+          <GrPowerCycle className='inline ml-2 text-orange-500 cursor-pointer' onClick={() => { window.location.reload() }} />
         </div>
       , startIndex: 1, colSpan: 4, bg: "bg-gray-300"
     },
     { label: "", startIndex: 5, colSpan: 1, bg: "bg-white" },
     {
       label:
-        <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />ABC <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
+        <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />ABC <BsThreeDots className='inline mr-1 w-4 h-4' onClick={() => { alert("1.  A\n2.  B\n3.  C") }} /></div>
       , startIndex: 6, colSpan: 1, bg: "bg-green-200"
     },
     {
       label:
-        <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Answer a Question <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
+        <div className="text-gray-500 font-semibold"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Answer a Question <BsThreeDots className='inline mr-1 w-4 h-4' onClick={() => { alert("1.  Answer A\n2.  Answer B\n3.  Answer C") }} /></div>
       , startIndex: 7, colSpan: 2, bg: "bg-purple-200"
     },
     {
       label:
-        <div className="text-gray-500 font-semibold text-center"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Extract <BsThreeDots className='inline mr-1 w-4 h-4' /></div>
+        <div className="text-gray-500 font-semibold text-center"><PiArrowsSplit className='inline mr-1 mb-1 w-4 h-4' />Extract <BsThreeDots className='inline mr-1 w-4 h-4' onClick={() => { alert("1.  Extract A\n2.  Extract B\n3.  Extract C") }} /></div>
       , startIndex: 9, colSpan: 1, bg: "bg-orange-200"
     },
   ]);
@@ -532,7 +532,7 @@ const Spreadsheet: React.FC = () => {
                         const newCol = columnHelper.display({
                           id: `custom-${Date.now()}`,
                           header: () => "New Col",
-                          cell: () => <span></span>,
+                          cell: () => "",
                         });
                         setExtraColumn(prev => [...prev, newCol]);
                         setSuperHeaders(headers => [
@@ -595,49 +595,51 @@ const Spreadsheet: React.FC = () => {
             <tbody>
               {table.getRowModel().rows.map(row => (
                 <tr key={row.id}>
-                  {row.getVisibleCells().map((cell, idx) => (
-                    <td
-                      key={cell.id}
-                      contentEditable={idx === columns.length - 1 ? false : true}
-                      className={
-                        (idx === 0
-                          ? "bg-gray-50 px-2 py-2 text-center border border-white"
-                          : idx === 1
-                            ? "px-3 py-3 text-left truncate max-w-[210px] border border-gray-200"
-                            : idx === 2
-                              ? "px-3 py-3 text-right border border-gray-200"
-                              : idx === 3
-                                ? "px-3 py-3 text-center border border-gray-200"
-                                : idx === 4
-                                  ? "px-3 py-3 text-left border border-gray-200"
-                                  : idx === 5
-                                    ? "px-2 py-3 text-left truncate max-w-[140px] border border-gray-200"
-                                    : idx === 6
-                                      ? "px-3 py-3 text-left border border-gray-200"
-                                      : idx === 7
-                                        ? "px-3 py-3 text-center border border-gray-200"
-                                        : idx === 8
-                                          ? "px-3 py-3 text-right border border-gray-200"
-                                          : idx === 9
+                  {row.getVisibleCells().map((cell, idx) => {
+                    return (
+                      <td
+                        key={cell.id}
+                        contentEditable={idx === columns.length - 1 || idx === 5 ? false : true}
+                        className={
+                          (idx === 0
+                            ? "bg-gray-50 px-2 py-2 text-center border border-white"
+                            : idx === 1
+                              ? `px-3 py-3 text-left ${focusedCell ? "whitespace-nowrap overflow-hidden" : "truncate"} max-w-[210px] border border-gray-200`
+                              : idx === 2
+                                ? "px-3 py-3 text-right border border-gray-200"
+                                : idx === 3
+                                  ? "px-3 py-3 text-center border border-gray-200"
+                                  : idx === 4
+                                    ? "px-3 py-3 text-left border border-gray-200"
+                                    : idx === 5
+                                      ? `px-2 py-3 text-left truncate max-w-[140px] border border-gray-200`
+                                      : idx === 6
+                                        ? "px-3 py-3 text-left border border-gray-200"
+                                        : idx === 7
+                                          ? "px-3 py-3 text-center border border-gray-200"
+                                          : idx === 8
                                             ? "px-3 py-3 text-right border border-gray-200"
-                                            : idx === columns.length - 1
-                                              ? "px-6 border-2 border-gray-200"
-                                              : "px-3 border border-gray-200"
-                        ) +
-                        (hoveredCell && hoveredCell.row === row.id && hoveredCell.col === idx && hoveredCell.col !== columns.length - 1
-                          ? " border-green-500 border-2"
-                          : "")
-                      }
-                      style={idx === columns.length - 1
-                        ? { borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }
-                        : undefined
-                      }
-                      onMouseEnter={() => setHoveredCell({ row: row.id, col: idx })}
-                      onMouseLeave={() => setHoveredCell(null)}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
+                                            : idx === 9
+                                              ? "px-3 py-3 text-right border border-gray-200"
+                                              : idx === columns.length - 1
+                                                ? "px-6 border-2 border-gray-200"
+                                                : `px-2 border border-gray-200 ${focusedCell ? "whitespace-nowrap overflow-hidden" : "truncate"} max-w-[140px]`
+                          ) +
+                          (hoveredCell && hoveredCell.row === row.id && hoveredCell.col === idx && hoveredCell.col !== columns.length - 1
+                            ? " border-green-500 border-2"
+                            : "")
+                        }
+                        style={idx === columns.length - 1
+                          ? { borderLeftColor: 'gray', borderLeftStyle: 'dashed', borderRightColor: 'gray', borderRightStyle: 'dashed' }
+                          : undefined
+                        }
+                        onMouseEnter={() => {setHoveredCell({ row: row.id, col: idx }); setFocusedCell({ row: row.id, col: idx });}}
+                        onMouseLeave={() => {setHoveredCell(null); setFocusedCell(null);}}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
               {showEmptyRows && Array.from({ length: emptyRowCount }).map((_, i) => (
