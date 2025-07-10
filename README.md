@@ -41,7 +41,7 @@ src/
 │
 ├── components/
 │   ├── Spreadsheet.tsx       # Main spreadsheet UI component
-│   └── FloatingDropdown.tsx  # Reusable dropdown box
+│
 │
 ├── App.tsx                   # App entry point
 └── main.tsx                  # React DOM render
